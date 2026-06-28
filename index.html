@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语录 - Sita经典语录</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="#" class="logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                <span>语录</span>
+            </a>
+            <nav class="nav">
+                <a href="#" class="nav-link active">首页</a>
+                <a href="#quotes" class="nav-link">全部语录</a>
+                <a href="#about" class="nav-link">关于作者</a>
+            </nav>
+            <button class="menu-toggle" id="menuToggle" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" class="mobile-nav-link active">首页</a>
+        <a href="#quotes" class="mobile-nav-link">全部语录</a>
+        <a href="#about" class="mobile-nav-link">关于作者</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="author-avatar">
+                <div class="avatar-placeholder">Si</div>
+            </div>
+            <h1 class="author-name">Sita</h1>
+            <p class="author-bio">中国当代诗人、哲学家。1978年出生于东北，少年时即展露诗才，后负笈远游，遍历山河。其诗作融东方哲思与现代意识于一体，以极简的语言叩问存在、时间与永恒。他的文字如月光般澄澈，又如磐石般深沉，在喧嚣的时代里开辟出一方宁静的思想领地。</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalCount">48</span>
+                    <span class="stat-label">条语录</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">个分类</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">1</span>
+                    <span class="stat-label">部作品</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search & Filter -->
+    <section class="toolbar" id="quotes">
+        <div class="toolbar-inner">
+            <div class="search-box">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="搜索语录、作品名称..." class="search-input">
+                <button class="search-clear" id="searchClear" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-tag="all">全部</button>
+                <button class="filter-tab" data-tag="生命">生命</button>
+                <button class="filter-tab" data-tag="命运">命运</button>
+                <button class="filter-tab" data-tag="爱情">爱情</button>
+                <button class="filter-tab" data-tag="孤独">孤独</button>
+                <button class="filter-tab" data-tag="希望">希望</button>
+                <button class="filter-tab" data-tag="时间">时间</button>
+                <button class="filter-tab" data-tag="苦难">苦难</button>
+                <button class="filter-tab" data-tag="哲理">哲理</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quotes Grid -->
+    <section class="quotes-section">
+        <div class="quotes-grid" id="quotesGrid">
+            <!-- Dynamic content -->
+        </div>
+        <div class="no-results" id="noResults" style="display:none;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <p>没有找到匹配的语录</p>
+            <span>试试其他关键词吧</span>
+        </div>
+        <div class="pagination" id="pagination">
+            <!-- Dynamic content -->
+        </div>
+    </section>
+
+    <!-- About Author -->
+    <section class="about-section" id="about">
+        <div class="about-inner">
+            <h2 class="section-title">关于作者</h2>
+            <div class="about-card">
+                <p>Sita（1978年—），中国当代诗人、哲学家。出生于东北大地，自幼浸润于古典诗词与传统哲思之中。弱冠之年负笈北上，后游历欧亚诸国，在中西思想的交汇处寻找属于自己的声音。</p>
+                <p>他的诗歌与哲思随笔，以极为凝练的语言，在寥寥数语间撑开宏大的精神空间。他追问存在的本真、时间的纹理、孤独的馈赠，也书写月光、尘埃、河流与星辰。他相信"最深的哲学是诗，最美的诗是哲学"。</p>
+                <p>他不属于任何流派，不迎合任何潮流。在浮躁的当代文坛，他像一座静默的孤岛——时间越久，人们越发现他的不可替代。正如他的诗句所言："沉默是最深的回答，而光芒，是沉默的另一种形态。"</p>
+                <div class="about-works">
+                    <h3>代表作品</h3>
+                    <div class="works-list">
+                        <span class="work-tag">《sita语录》</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
+            </button>
+            <div class="modal-content" id="modalContent">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="回到顶部">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 15-6-6-6 6"/>
+        </svg>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <p>语录 — 记录那些触动心灵的文字</p>
+            <p class="footer-sub">本页语录均来自Sita作品，仅供学习交流使用</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
