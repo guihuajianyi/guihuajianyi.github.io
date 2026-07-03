@@ -524,6 +524,7 @@ img {
     font-size: 13px;
     color: var(--color-text-light);
     font-style: italic;
+    flex: 1;
 }
 
 .quote-actions {

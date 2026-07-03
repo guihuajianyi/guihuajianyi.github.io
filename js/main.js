@@ -85,7 +85,7 @@
                     <div class="quote-tags">${tagsHtml}</div>
                     <div class="quote-text">${q.text}</div>
                     <div class="quote-meta">
-                        <span class="quote-source">—— ${q.source}</span>
+                        <span class="quote-source">—— ${q.source}${q.date ? ` · ${q.date}` : ''}</span>
                         <div class="quote-actions">
                             <button class="quote-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${q.id}" data-action="like" aria-label="${isLiked ? '取消收藏' : '收藏'}">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -195,7 +195,7 @@
 
         dom.modalContent.innerHTML = `
             <div class="modal-quote-text">${quote.text}</div>
-            <div class="modal-source">—— <strong>${quote.source}</strong></div>
+            <div class="modal-source">—— <strong>${quote.source}</strong>${quote.date ? ` · ${quote.date}` : ''}</div>
             <div class="modal-tags">${tagsHtml}</div>
             <div class="modal-actions">
                 <button class="modal-action-btn" id="modalLikeBtn" data-id="${quote.id}">
@@ -369,8 +369,74 @@
         }
     }
 
+    // ---- Data Loading ----
+    /**
+     * 解析文本格式的语录文件
+     * 格式: 
+     *   2026.6.6 14:37
+     *   "语录内容..."
+     * 
+     * 每个语录块之间用空行分隔
+     */
+    function parseQuotesText(text) {
+        const quotes = [];
+        // 按空行分割各语录块
+        const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+        
+        blocks.forEach((block, index) => {
+            const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length < 2) return;
+            
+            // 第一行: 日期时间 (如 "2026.6.6 14:37")
+            const dateLine = lines[0];
+            
+            // 第二行: 语录内容（带引号）
+            let quoteText = lines[1];
+            // 去除首尾各种引号（中英文、全角半角）
+            quoteText = quoteText.replace(/^[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u201c\u201d\u2018\u2019\u00ab\u00bb]+/, '')
+                                 .replace(/[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u201c\u201d\u2018\u2019\u00ab\u00bb]+$/, '');
+            
+            quotes.push({
+                id: index + 1,
+                text: quoteText,
+                date: dateLine,
+                source: "《sita语录》",
+                tags: ["语录"],
+                liked: false
+            });
+        });
+        
+        return quotes;
+    }
+
+    async function loadQuotes() {
+        try {
+            const response = await fetch('quotes.txt?' + Date.now());
+            if (response.ok) {
+                const text = await response.text();
+                const parsed = parseQuotesText(text);
+                if (parsed.length > 0) {
+                    console.log('✅ 从 quotes.txt 加载了 ' + parsed.length + ' 条语录');
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ quotes.txt 加载失败，使用内置数据');
+        }
+        
+        if (typeof quotesData !== 'undefined' && quotesData.length > 0) {
+            console.log('📦 使用内置 data.js 数据 (' + quotesData.length + ' 条)');
+            return quotesData;
+        }
+        
+        return [];
+    }
+
     // ---- Init ----
-    function init() {
+    async function init() {
+        // 从文本文件加载语录（失败则回退到 data.js）
+        quotesData = await loadQuotes();
+
         // Render initial quotes
         renderQuotes();
 
