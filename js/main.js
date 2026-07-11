@@ -10,7 +10,7 @@
         currentTag: 'all',
         searchQuery: '',
         currentPage: 1,
-        pageSize: 12,
+        pageSize: 24,
         likedIds: new Set(JSON.parse(localStorage.getItem('likedQuotes') || '[]'))
     };
 
@@ -26,6 +26,7 @@
         noResults: $('#noResults'),
         pagination: $('#pagination'),
         totalCount: $('#totalCount'),
+        categoryCount: $('#categoryCount'),
         modalOverlay: $('#modalOverlay'),
         modalContent: $('#modalContent'),
         modalClose: $('#modalClose'),
@@ -37,6 +38,32 @@
     };
 
     // ---- Filtered Data ----
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char]));
+    }
+
+    function getAllTags() {
+        const seen = new Set();
+        const tags = [];
+
+        quotesData.forEach((quote) => {
+            quote.tags.forEach((tag) => {
+                if (!seen.has(tag)) {
+                    seen.add(tag);
+                    tags.push(tag);
+                }
+            });
+        });
+
+        return tags;
+    }
+
     function getFilteredQuotes() {
         let filtered = [...quotesData];
 
@@ -57,10 +84,31 @@
     }
 
     // ---- Render ----
+    function renderFilterTabs() {
+        const tags = getAllTags();
+        if (dom.categoryCount) {
+            dom.categoryCount.textContent = tags.length;
+        }
+
+        if (state.currentTag !== 'all' && !tags.includes(state.currentTag)) {
+            state.currentTag = 'all';
+        }
+
+        dom.filterTabs.innerHTML = [
+            `<button class="filter-tab ${state.currentTag === 'all' ? 'active' : ''}" data-tag="all">全部</button>`,
+            ...tags.map((tag) => `
+                <button class="filter-tab ${state.currentTag === tag ? 'active' : ''}" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>
+            `)
+        ].join('');
+    }
+
     function renderQuotes() {
         const filtered = getFilteredQuotes();
         const total = filtered.length;
         const totalPages = Math.ceil(total / state.pageSize);
+        if (total > 0 && state.currentPage > totalPages) {
+            state.currentPage = totalPages;
+        }
         const start = (state.currentPage - 1) * state.pageSize;
         const pageItems = filtered.slice(start, start + state.pageSize);
 
@@ -79,13 +127,15 @@
         // Render cards
         dom.quotesGrid.innerHTML = pageItems.map((q, i) => {
             const isLiked = state.likedIds.has(q.id);
-            const tagsHtml = q.tags.map(t => `<span class="quote-tag">${t}</span>`).join('');
+            const tagsHtml = q.tags.map(t => `
+                <button class="quote-tag" data-action="filter-tag" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>
+            `).join('');
             return `
                 <div class="quote-card" data-id="${q.id}" style="animation-delay: ${i * 0.05}s">
                     <div class="quote-tags">${tagsHtml}</div>
-                    <div class="quote-text">${q.text}</div>
+                    <div class="quote-text">${escapeHtml(q.text)}</div>
                     <div class="quote-meta">
-                        <span class="quote-source">—— ${q.source}${q.date ? ` · ${q.date}` : ''}</span>
+                        <span class="quote-source">—— ${escapeHtml(q.source)}${q.date ? ` · ${escapeHtml(q.date)}` : ''}</span>
                         <div class="quote-actions">
                             <button class="quote-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${q.id}" data-action="like" aria-label="${isLiked ? '取消收藏' : '收藏'}">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -131,6 +181,13 @@
                 const id = parseInt(btn.dataset.id);
                 const quote = quotesData.find(q => q.id === id);
                 if (quote) copyQuote(quote);
+            });
+        });
+
+        dom.quotesGrid.querySelectorAll('[data-action="filter-tag"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                filterByTag(btn.dataset.tag);
             });
         });
     }
@@ -191,11 +248,11 @@
     // ---- Modal ----
     function openModal(quote) {
         const isLiked = state.likedIds.has(quote.id);
-        const tagsHtml = quote.tags.map(t => `<span class="modal-tag">${t}</span>`).join('');
+        const tagsHtml = quote.tags.map(t => `<span class="modal-tag">${escapeHtml(t)}</span>`).join('');
 
         dom.modalContent.innerHTML = `
-            <div class="modal-quote-text">${quote.text}</div>
-            <div class="modal-source">—— <strong>${quote.source}</strong>${quote.date ? ` · ${quote.date}` : ''}</div>
+            <div class="modal-quote-text">${escapeHtml(quote.text)}</div>
+            <div class="modal-source">—— <strong>${escapeHtml(quote.source)}</strong>${quote.date ? ` · ${escapeHtml(quote.date)}` : ''}</div>
             <div class="modal-tags">${tagsHtml}</div>
             <div class="modal-actions">
                 <button class="modal-action-btn" id="modalLikeBtn" data-id="${quote.id}">
@@ -289,14 +346,14 @@
     }
 
     // ---- Event Handlers ----
-    function onFilterClick(e) {
-        const tab = e.target.closest('.filter-tab');
-        if (!tab) return;
-
+    function filterByTag(tag) {
         dom.filterTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+        const tab = [...dom.filterTabs.querySelectorAll('.filter-tab')].find(t => t.dataset.tag === tag);
+        if (tab) {
+            tab.classList.add('active');
+        }
 
-        state.currentTag = tab.dataset.tag;
+        state.currentTag = tag;
         state.currentPage = 1;
         state.searchQuery = '';
         dom.searchInput.value = '';
@@ -307,6 +364,13 @@
         if (window.innerWidth < 768) {
             $('#quotes').scrollIntoView({ behavior: 'smooth' });
         }
+    }
+
+    function onFilterClick(e) {
+        const tab = e.target.closest('.filter-tab');
+        if (!tab) return;
+
+        filterByTag(tab.dataset.tag);
     }
 
     function onSearchInput() {
@@ -375,9 +439,24 @@
      * 格式: 
      *   2026.6.6 14:37
      *   "语录内容..."
+     *   标签：自相矛盾、课堂
      * 
+     * 标签行可省略，多个标签可用顿号、逗号、空格、斜杠或竖线分隔。
      * 每个语录块之间用空行分隔
      */
+    function parseTagLine(lines) {
+        const tagLine = lines.slice(2).find(line => /^#?\s*(标签|tag|tags)\s*[:：]/i.test(line));
+        if (!tagLine) return ['语录'];
+
+        const tags = tagLine
+            .replace(/^#?\s*(标签|tag|tags)\s*[:：]/i, '')
+            .split(/[、,，/|;；\s]+/)
+            .map(tag => tag.trim())
+            .filter(Boolean);
+
+        return tags.length ? [...new Set(tags)] : ['语录'];
+    }
+
     function parseQuotesText(text) {
         const quotes = [];
         // 按空行分割各语录块
@@ -401,7 +480,7 @@
                 text: quoteText,
                 date: dateLine,
                 source: "《sita语录》",
-                tags: ["语录"],
+                tags: parseTagLine(lines),
                 liked: false
             });
         });
@@ -436,6 +515,7 @@
     async function init() {
         // 从文本文件加载语录（失败则回退到 data.js）
         quotesData = await loadQuotes();
+        renderFilterTabs();
 
         // Render initial quotes
         renderQuotes();

@@ -577,6 +577,14 @@ img {
     color: var(--color-tag-text);
     font-weight: 500;
     letter-spacing: 0.5px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+    transition: var(--transition);
+}
+
+.quote-tag:hover {
+    border-color: rgba(196, 69, 54, 0.25);
+    background: #fde7df;
 }
 
 /* No Results */
