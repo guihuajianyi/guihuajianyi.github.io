@@ -75,6 +75,7 @@
             const q = state.searchQuery.trim().toLowerCase();
             filtered = filtered.filter(item =>
                 item.text.toLowerCase().includes(q) ||
+                (item.comment && item.comment.toLowerCase().includes(q)) ||
                 item.source.toLowerCase().includes(q) ||
                 item.tags.some(t => t.toLowerCase().includes(q))
             );
@@ -134,6 +135,7 @@
                 <div class="quote-card" data-id="${q.id}" style="animation-delay: ${i * 0.05}s">
                     <div class="quote-tags">${tagsHtml}</div>
                     <div class="quote-text">${escapeHtml(q.text)}</div>
+                    ${q.comment ? `<div class="quote-comment">太史公曰：${escapeHtml(q.comment)}</div>` : ''}
                     <div class="quote-meta">
                         <span class="quote-source">—— ${escapeHtml(q.source)}${q.date ? ` · ${escapeHtml(q.date)}` : ''}</span>
                         <div class="quote-actions">
@@ -252,6 +254,7 @@
 
         dom.modalContent.innerHTML = `
             <div class="modal-quote-text">${escapeHtml(quote.text)}</div>
+            ${quote.comment ? `<div class="modal-comment">太史公曰：${escapeHtml(quote.comment)}</div>` : ''}
             <div class="modal-source">—— <strong>${escapeHtml(quote.source)}</strong>${quote.date ? ` · ${escapeHtml(quote.date)}` : ''}</div>
             <div class="modal-tags">${tagsHtml}</div>
             <div class="modal-actions">
@@ -316,7 +319,8 @@
     }
 
     async function copyQuote(quote) {
-        const text = `"${quote.text}"\n—— ${quote.source}`;
+        const comment = quote.comment ? `\n太史公曰：${quote.comment}` : '';
+        const text = `"${quote.text}"${comment}\n—— ${quote.source}`;
         try {
             await navigator.clipboard.writeText(text);
             showToast('已复制到剪贴板 📋');
@@ -457,6 +461,11 @@
         return tags.length ? [...new Set(tags)] : ['语录'];
     }
 
+    function stripWrappingQuotes(value) {
+        return value.replace(/^[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u00ab\u00bb]+/, '')
+                    .replace(/[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u00ab\u00bb]+$/, '');
+    }
+
     function parseQuotesText(text) {
         const quotes = [];
         // 按空行分割各语录块
@@ -472,12 +481,14 @@
             // 第二行: 语录内容（带引号）
             let quoteText = lines[1];
             // 去除首尾各种引号（中英文、全角半角）
-            quoteText = quoteText.replace(/^[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u201c\u201d\u2018\u2019\u00ab\u00bb]+/, '')
-                                 .replace(/[\u201c\u201d\u2018\u2019\u0022\u300c\u300d\u300e\u300f\uff02\u201c\u201d\u2018\u2019\u00ab\u00bb]+$/, '');
+            quoteText = stripWrappingQuotes(quoteText);
+            const commentLine = lines.slice(2).find(line => !/^#?\s*(标签|tag|tags)\s*[:：]/i.test(line));
+            const comment = commentLine ? stripWrappingQuotes(commentLine) : '';
             
             quotes.push({
                 id: index + 1,
                 text: quoteText,
+                comment,
                 date: dateLine,
                 source: "《sita语录》",
                 tags: parseTagLine(lines),

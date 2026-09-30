@@ -512,6 +512,18 @@ img {
     line-height: 1;
 }
 
+.quote-comment,
+.modal-comment {
+    color: var(--color-text-light);
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.7;
+}
+
+.quote-comment {
+    margin: -4px 0 16px 20px;
+}
+
 .quote-meta {
     display: flex;
     align-items: center;
@@ -833,6 +845,10 @@ img {
     margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--color-border-light);
+}
+
+.modal-comment {
+    margin: -8px 0 16px 28px;
 }
 
 .modal-source strong {
